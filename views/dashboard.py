@@ -42,13 +42,17 @@ class Dashboard(ctk.CTk):
         sidebar.pack(fill="y", side="left", padx=20, pady=20)
         sidebar.pack_propagate(False)
 
+        # ── Content Area ─────────────────────────────────────
+        self.content_area = ctk.CTkFrame(body, fg_color="#ffffff", corner_radius=0)
+        self.content_area.pack(fill="both", expand=True)
+
         buttons = [
             ("INVENTORY",                    "#ffffff", "#000000", 50, on_inventory_click),
             ("SELL",                         "#90EE90", "#000000", 50, on_sell_click),
             ("RECEIPTS",                     "#00BFFF", "#000000", 50, on_receipts_click),
             ("INVENTORY\nTRANSACTION ENTRY", "#FFD700", "#000000", 30, on_inventory_transaction_click),
-            ("USER",                         "#d3d3d3", "#000000", 50, lambda: self.show_page("user")),
-            ("LOG OUT",                      "#FF4444", "#000000", 50, on_exit_click),
+            ("USER",                         "#d3d3d3", "#000000", 50, lambda: on_user_click(self)),
+            ("EXIT",                         "#FF4444", "#000000", 50, on_exit_click),
         ]
 
         for text, bg, fg, fsize, cmd in buttons:
@@ -65,6 +69,13 @@ class Dashboard(ctk.CTk):
                 height=136,
                 command=cmd
             ).pack(fill="x", pady=6)
+
+    def show_page(self, page_name):
+        for widget in self.content_area.winfo_children():
+            widget.destroy()
+        if page_name == "user":
+            from views.user import UserPage
+            UserPage(self.content_area, self).pack(fill="both", expand=True)
 
 def open_window():
     app = Dashboard()

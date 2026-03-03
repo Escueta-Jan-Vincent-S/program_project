@@ -13,8 +13,9 @@ def on_inventory_transaction_click():
     print("INVENTORY TRANSACTION ENTRY button clicked")
 
 def on_user_click(master):
-    from views.user import UserPage
-    UserPage(master.content_area, master).pack(fill="both", expand=True)
+    from views.user import UserWindow
+    master.withdraw()
+    UserWindow(master)
 
 def on_exit_click():
     print("EXIT button clicked")
