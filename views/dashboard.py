@@ -5,8 +5,7 @@ class Dashboard(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title(APP_NAME)
-        self.geometry(WINDOW_SIZE)
-        self.resizable(False, False)
+        self.attributes("-fullscreen", True)
 
 def open_window():
     app = Dashboard()
