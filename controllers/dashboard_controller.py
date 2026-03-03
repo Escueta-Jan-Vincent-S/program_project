@@ -1,3 +1,6 @@
+import sys
+
+
 def on_inventory_click():
     print("INVENTORY button clicked")
 
@@ -13,5 +16,6 @@ def on_inventory_transaction_click():
 def on_user_click():
     print("USER button clicked")
 
-def on_logout_click():
-    print("LOG OUT button clicked")
+def on_exit_click():
+    print("EXIT button clicked")
+    sys.exit()

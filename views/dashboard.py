@@ -6,7 +6,7 @@ from controllers.dashboard_controller import (
     on_receipts_click,
     on_inventory_transaction_click,
     on_user_click,
-    on_logout_click
+    on_exit_click
 )
 
 class Dashboard(ctk.CTk):
@@ -44,7 +44,7 @@ class Dashboard(ctk.CTk):
             ("RECEIPTS",                     "#00BFFF", "#000000", 50, on_receipts_click),
             ("INVENTORY\nTRANSACTION ENTRY", "#FFD700", "#000000", 30, on_inventory_transaction_click),
             ("USER",                         "#d3d3d3", "#000000", 50, on_user_click),
-            ("LOG OUT",                      "#FF4444", "#000000", 50, on_logout_click),
+            ("EXIT",                      "#FF4444", "#000000", 50, on_exit_click),
         ]
 
         for text, bg, fg, fsize, cmd in buttons:
