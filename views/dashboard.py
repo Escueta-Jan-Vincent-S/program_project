@@ -1,12 +1,13 @@
 import customtkinter as ctk
+from settings import APP_NAME, WINDOW_SIZE
 
-class TestWindow(ctk.CTk):
+class Dashboard(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Test Window")
-        self.geometry("1280x720")
+        self.title(APP_NAME)
+        self.geometry(WINDOW_SIZE)
         self.resizable(False, False)
 
 def open_window():
-    app = TestWindow()
+    app = Dashboard()
     app.mainloop()
