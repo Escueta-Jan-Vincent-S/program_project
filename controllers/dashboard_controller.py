@@ -1,16 +1,17 @@
 import sys
+from controllers import controller
 
 def on_inventory_click():
-    print("INVENTORY button clicked")
+    controller.navigate("inventory")
 
 def on_sell_click():
-    print("SELL button clicked")
+    controller.navigate("sell")
 
 def on_receipts_click():
-    print("RECEIPTS button clicked")
+    controller.navigate("receipts")
 
 def on_inventory_transaction_click():
-    print("INVENTORY TRANSACTION ENTRY button clicked")
+    controller.navigate("inventory_transaction")
 
 def on_exit_click():
     sys.exit()

@@ -2,7 +2,6 @@ import customtkinter as ctk
 from controllers import controller
 from settings import APP_NAME
 
-
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -19,20 +18,38 @@ class App(ctk.CTk):
 
         from views.dashboard import DashboardPage
         from views.user import UserPage
+        from views.inventory import InventoryPage
+        from views.sell import SellPage
+        from views.receipts import ReceiptsPage
+        from views.inventory_transaction import InventoryTransactionPage
 
         self.dashboard_page = DashboardPage(self.container)
         self.user_page = UserPage(self.container)
+        self.inventory_page = InventoryPage(self.container)
+        self.sell_page = SellPage(self.container)
+        self.receipts_page = ReceiptsPage(self.container)
+        self.inventory_transaction_page = InventoryTransactionPage(self.container)
 
         self.dashboard_page.grid(row=0, column=0, sticky="nsew")
         self.user_page.grid(row=0, column=0, sticky="nsew")
+        self.inventory_page.grid(row=0, column=0, sticky="nsew")
+        self.sell_page.grid(row=0, column=0, sticky="nsew")
+        self.receipts_page.grid(row=0, column=0, sticky="nsew")
+        self.inventory_transaction_page.grid(row=0, column=0, sticky="nsew")
 
         self.show_page("dashboard")
 
     def show_page(self, page_name):
-        if page_name == "dashboard":
-            self.dashboard_page.tkraise()
-        elif page_name == "user":
-            self.user_page.tkraise()
+        pages = {
+            "dashboard": self.dashboard_page,
+            "user": self.user_page,
+            "inventory": self.inventory_page,
+            "sell": self.sell_page,
+            "receipts": self.receipts_page,
+            "inventory_transaction": self.inventory_transaction_page,
+        }
+        if page_name in pages:
+            pages[page_name].tkraise()
 
 if __name__ == "__main__":
     app = App()
