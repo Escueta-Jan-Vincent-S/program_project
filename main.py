@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from controllers import controller
 from settings import APP_NAME
+from database.database import initialize_db
+initialize_db()
 
 class App(ctk.CTk):
     def __init__(self):
