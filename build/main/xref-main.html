@@ -28,6 +28,7 @@ imports:
  &#8226;   <a href="#controllers.controller">controllers.controller</a>
  &#8226;   <a href="#copyreg">copyreg</a>
  &#8226;   <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#database.database">database.database</a>
  &#8226;   <a href="#encodings">encodings</a>
  &#8226;   <a href="#encodings.aliases">encodings.aliases</a>
  &#8226;   <a href="#encodings.ascii">encodings.ascii</a>
@@ -3593,6 +3594,16 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="_sqlite3"></a>
+  <tt>_sqlite3</tt> <span class="moduletype"><tt>C:\Users\Admin\AppData\Local\Programs\Python\Python312\DLLs\_sqlite3.pyd</tt></span>  <div class="import">
+imported by:
+    <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="_sre"></a>
   <tt>_sre</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
 imports:
@@ -3957,6 +3968,7 @@ imported by:
  &#8226;   <a href="#py_compile">py_compile</a>
  &#8226;   <a href="#setuptools._vendor.backports.tarfile">setuptools._vendor.backports.tarfile</a>
  &#8226;   <a href="#setuptools._vendor.wheel.cli">setuptools._vendor.wheel.cli</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
  &#8226;   <a href="#tarfile">tarfile</a>
  &#8226;   <a href="#tokenize">tokenize</a>
  &#8226;   <a href="#unittest.main">unittest.main</a>
@@ -5682,6 +5694,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#pdb">pdb</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
 
   </div>
 
@@ -6020,6 +6033,7 @@ imported by:
  &#8226;   <a href="#setuptools.discovery">setuptools.discovery</a>
  &#8226;   <a href="#setuptools.dist">setuptools.dist</a>
  &#8226;   <a href="#setuptools.glob">setuptools.glob</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
  &#8226;   <a href="#tomllib._parser">tomllib._parser</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#tracemalloc">tracemalloc</a>
@@ -6288,6 +6302,8 @@ imports:
 imported by:
     <a href="#controllers.controller">controllers.controller</a>
  &#8226;   <a href="#controllers.dashboard_controller">controllers.dashboard_controller</a>
+ &#8226;   <a href="#controllers.inventory_controller">controllers.inventory_controller</a>
+ &#8226;   <a href="#controllers.user_controller">controllers.user_controller</a>
  &#8226;   <a href="#main.py">main.py</a>
  &#8226;   <a href="#views.dashboard">views.dashboard</a>
  &#8226;   <a href="#views.inventory">views.inventory</a>
@@ -6312,6 +6328,7 @@ imports:
 imported by:
     <a href="#controllers">controllers</a>
  &#8226;   <a href="#controllers.dashboard_controller">controllers.dashboard_controller</a>
+ &#8226;   <a href="#controllers.user_controller">controllers.user_controller</a>
  &#8226;   <a href="#main.py">main.py</a>
  &#8226;   <a href="#views.dashboard">views.dashboard</a>
  &#8226;   <a href="#views.inventory">views.inventory</a>
@@ -6337,6 +6354,41 @@ imports:
   <div class="import">
 imported by:
     <a href="#views.dashboard">views.dashboard</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="controllers.inventory_controller"></a>
+  <a target="code" href="///C:/Users/Admin/PycharmProjects/program_project/controllers/inventory_controller.py" type="text/plain"><tt>controllers.inventory_controller</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#controllers">controllers</a>
+ &#8226;   <a href="#database.database">database.database</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#views.inventory">views.inventory</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="controllers.user_controller"></a>
+  <a target="code" href="///C:/Users/Admin/PycharmProjects/program_project/controllers/user_controller.py" type="text/plain"><tt>controllers.user_controller</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#controllers">controllers</a>
+ &#8226;   <a href="#controllers.controller">controllers.controller</a>
+ &#8226;   <a href="#database.database">database.database</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#views.user">views.user</a>
 
   </div>
 
@@ -7832,6 +7884,39 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="database"></a>
+  <a target="code" href="///C:/Users/Admin/PycharmProjects/program_project/database/__init__.py" type="text/plain"><tt>database</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imported by:
+    <a href="#database.database">database.database</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="database.database"></a>
+  <a target="code" href="///C:/Users/Admin/PycharmProjects/program_project/database/database.py" type="text/plain"><tt>database.database</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#database">database</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#sys">sys</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controllers.inventory_controller">controllers.inventory_controller</a>
+ &#8226;   <a href="#controllers.user_controller">controllers.user_controller</a>
+ &#8226;   <a href="#main.py">main.py</a>
+ &#8226;   <a href="#views.inventory">views.inventory</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="dataclasses"></a>
   <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/dataclasses.py" type="text/plain"><tt>dataclasses</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -7882,6 +7967,7 @@ imported by:
  &#8226;   <a href="#plistlib">plistlib</a>
  &#8226;   <a href="#setuptools._vendor.tomli._re">setuptools._vendor.tomli._re</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
  &#8226;   <a href="#xmlrpc.client">xmlrpc.client</a>
 
@@ -11819,7 +11905,6 @@ imports:
  &#8226;   <a href="#importlib">importlib</a>
  &#8226;   <a href="#importlib._bootstrap">importlib._bootstrap</a>
  &#8226;   <a href="#importlib._bootstrap_external">importlib._bootstrap_external</a>
- &#8226;   <a href="#importlib.machinery">importlib.machinery</a>
  &#8226;   <a href="#sys">sys</a>
  &#8226;   <a href="#warnings">warnings</a>
 
@@ -11966,7 +12051,6 @@ imported by:
     <a href="#cffi._imp_emulation">cffi._imp_emulation</a>
  &#8226;   <a href="#cffi.verifier">cffi.verifier</a>
  &#8226;   <a href="#ctypes.util">ctypes.util</a>
- &#8226;   <a href="#importlib">importlib</a>
  &#8226;   <a href="#importlib.abc">importlib.abc</a>
  &#8226;   <a href="#inspect">inspect</a>
  &#8226;   <a href="#packaging.tags">packaging.tags</a>
@@ -20846,6 +20930,7 @@ imported by:
  &#8226;   <a href="#customtkinter.windows.widgets.font.font_manager">customtkinter.windows.widgets.font.font_manager</a>
  &#8226;   <a href="#customtkinter.windows.widgets.theme.theme_manager">customtkinter.windows.widgets.theme.theme_manager</a>
  &#8226;   <a href="#darkdetect._mac_detect">darkdetect._mac_detect</a>
+ &#8226;   <a href="#database.database">database.database</a>
  &#8226;   <a href="#doctest">doctest</a>
  &#8226;   <a href="#email.utils">email.utils</a>
  &#8226;   <a href="#fileinput">fileinput</a>
@@ -27442,6 +27527,87 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="sqlite3"></a>
+  <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/sqlite3/__init__.py" type="text/plain"><tt>sqlite3</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
+ &#8226;   <a href="#sqlite3.dump">sqlite3.dump</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#database.database">database.database</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
+ &#8226;   <a href="#sqlite3.dump">sqlite3.dump</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="sqlite3.__main__"></a>
+  <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/sqlite3/__main__.py" type="text/plain"><tt>sqlite3.__main__</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#argparse">argparse</a>
+ &#8226;   <a href="#code">code</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#textwrap">textwrap</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#sqlite3">sqlite3</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="sqlite3.dbapi2"></a>
+  <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/sqlite3/dbapi2.py" type="text/plain"><tt>sqlite3.dbapi2</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#_sqlite3">_sqlite3</a>
+ &#8226;   <a href="#collections.abc">collections.abc</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#time">time</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#sqlite3">sqlite3</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="sqlite3.dump"></a>
+  <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/sqlite3/dump.py" type="text/plain"><tt>sqlite3.dump</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#sqlite3">sqlite3</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#sqlite3">sqlite3</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="sre_compile"></a>
   <a target="code" href="///C:/Users/Admin/AppData/Local/Programs/Python/Python312/Lib/sre_compile.py" type="text/plain"><tt>sre_compile</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -27856,6 +28022,7 @@ imported by:
  &#8226;   <a href="#customtkinter.windows.widgets.theme.theme_manager">customtkinter.windows.widgets.theme.theme_manager</a>
  &#8226;   <a href="#darkdetect">darkdetect</a>
  &#8226;   <a href="#darkdetect._mac_detect">darkdetect._mac_detect</a>
+ &#8226;   <a href="#database.database">database.database</a>
  &#8226;   <a href="#dataclasses">dataclasses</a>
  &#8226;   <a href="#dis">dis</a>
  &#8226;   <a href="#doctest">doctest</a>
@@ -28020,6 +28187,7 @@ imported by:
  &#8226;   <a href="#site">site</a>
  &#8226;   <a href="#socket">socket</a>
  &#8226;   <a href="#socketserver">socketserver</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#statistics">statistics</a>
  &#8226;   <a href="#subprocess">subprocess</a>
@@ -28222,6 +28390,7 @@ imported by:
  &#8226;   <a href="#setuptools.config._validate_pyproject.error_reporting">setuptools.config._validate_pyproject.error_reporting</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
  &#8226;   <a href="#site">site</a>
+ &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
  &#8226;   <a href="#traceback">traceback</a>
 
   </div>
@@ -28355,6 +28524,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.wheel.wheelfile">setuptools._vendor.wheel.wheelfile</a>
  &#8226;   <a href="#setuptools.command.egg_info">setuptools.command.egg_info</a>
  &#8226;   <a href="#socketserver">socketserver</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#tarfile">tarfile</a>
@@ -29711,7 +29881,9 @@ imported by:
 imports:
     <a href="#controllers">controllers</a>
  &#8226;   <a href="#controllers.controller">controllers.controller</a>
+ &#8226;   <a href="#controllers.inventory_controller">controllers.inventory_controller</a>
  &#8226;   <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#database.database">database.database</a>
  &#8226;   <a href="#views">views</a>
 
   </div>
@@ -29787,6 +29959,7 @@ imported by:
 imports:
     <a href="#controllers">controllers</a>
  &#8226;   <a href="#controllers.controller">controllers.controller</a>
+ &#8226;   <a href="#controllers.user_controller">controllers.user_controller</a>
  &#8226;   <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#views">views</a>
 
@@ -29949,6 +30122,8 @@ imported by:
  &#8226;   <a href="#setuptools.command.bdist_wheel">setuptools.command.bdist_wheel</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
  &#8226;   <a href="#shutil">shutil</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#sre_constants">sre_constants</a>
  &#8226;   <a href="#sre_parse">sre_parse</a>

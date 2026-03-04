@@ -1,10 +1,18 @@
 import sqlite3
 import os
+import sys
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "pos.db")
+def get_db_path():
+    if getattr(sys, 'frozen', False):
+        # Running as .exe
+        base_path = os.path.dirname(sys.executable)
+    else:
+        # Running as .py
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, "pos.db")
 
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(get_db_path())
 
 def initialize_db():
     conn = get_connection()
