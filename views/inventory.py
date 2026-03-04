@@ -72,7 +72,7 @@ class InventoryPage(ctk.CTkFrame):
 
         btn_configs = [
             ("ADD ITEM",      "#90EE90", "#000000", lambda: self.open_add_item()),
-            ("REORDER TABLE", "#90EE90", "#000000", lambda: print("REORDER clicked")),
+            ("REORDER TABLE", "#90EE90", "#000000", lambda: controller.navigate("reorder_table")),
             ("EDIT ITEM",     "#d3d3d3", "#000000", lambda: self.open_edit_item()),
             ("DELETE ITEM",   "#FF4444", "#ffffff", lambda: self.open_delete_confirm()),
         ]
