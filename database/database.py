@@ -95,3 +95,22 @@ def delete_item(barcode):
     cursor.execute("DELETE FROM items WHERE barcode = ?", (barcode,))
     conn.commit()
     conn.close()
+
+def update_item(barcode, item_name, category, unit_cost, selling_price, current_stock):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE items
+        SET item_name=?, category=?, unit_cost=?, selling_price=?, current_stock=?
+        WHERE barcode=?
+    """, (item_name, category, unit_cost, selling_price, current_stock, barcode))
+    conn.commit()
+    conn.close()
+
+def get_item_by_barcode(barcode):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM items WHERE barcode=?", (barcode,))
+    item = cursor.fetchone()
+    conn.close()
+    return item

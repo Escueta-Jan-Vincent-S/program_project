@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from controllers import controller
-from controllers.inventory_controller import on_add_item, on_delete_item
+from controllers.inventory_controller import on_add_item, on_delete_item, on_edit_item
 
 class InventoryPage(ctk.CTkFrame):
     def __init__(self, master):
@@ -73,7 +73,7 @@ class InventoryPage(ctk.CTkFrame):
         btn_configs = [
             ("ADD ITEM",      "#90EE90", "#000000", lambda: self.open_add_item()),
             ("REORDER TABLE", "#90EE90", "#000000", lambda: print("REORDER clicked")),
-            ("EDIT ITEM",     "#d3d3d3", "#000000", lambda: print("EDIT clicked")),
+            ("EDIT ITEM",     "#d3d3d3", "#000000", lambda: self.open_edit_item()),
             ("DELETE ITEM",   "#FF4444", "#ffffff", lambda: self.open_delete_confirm()),
         ]
 
@@ -139,15 +139,11 @@ class InventoryPage(ctk.CTkFrame):
             self.selected_row_labels.append((barcode, row_labels, bg))
 
     def select_row(self, barcode, row_labels):
-        # Reset all rows
         for b, labels, orig_bg in self.selected_row_labels:
             for lbl in labels:
                 lbl.configure(fg_color=orig_bg)
-
-        # Highlight selected row
         for lbl in row_labels:
             lbl.configure(fg_color="#00BFFF")
-
         self.selected_barcode = barcode
 
     def open_add_item(self):
@@ -193,6 +189,67 @@ class InventoryPage(ctk.CTkFrame):
             command=save
         ).pack(padx=30, pady=20)
 
+    def open_edit_item(self):
+        if not self.selected_barcode:
+            popup = ctk.CTkToplevel(self)
+            popup.title("Warning")
+            popup.geometry("300x150")
+            popup.resizable(False, False)
+            popup.grab_set()
+            ctk.CTkLabel(popup, text="Please select an item first!",
+                font=ctk.CTkFont(size=14)).pack(expand=True)
+            ctk.CTkButton(popup, text="OK", command=popup.destroy,
+                fg_color="#d3d3d3", text_color="#000000",
+                corner_radius=0, width=100).pack(pady=10)
+            return
+
+        from database.database import get_item_by_barcode
+        item = get_item_by_barcode(self.selected_barcode)
+
+        popup = ctk.CTkToplevel(self)
+        popup.title("Edit Item")
+        popup.geometry("500x550")
+        popup.resizable(False, False)
+        popup.grab_set()
+
+        ctk.CTkLabel(popup, text="EDIT ITEM",
+            font=ctk.CTkFont(size=20, weight="bold")).pack(pady=15)
+
+        ctk.CTkLabel(popup, text=f"Barcode: {item[1]}",
+            font=ctk.CTkFont(size=14)).pack(anchor="w", padx=30)
+
+        fields = ["Item Name", "Category", "Unit Cost", "Selling Price", "Current Stock"]
+        prefill = [item[2], item[3], item[4], item[5], item[6]]
+        entries = {}
+
+        for field, value in zip(fields, prefill):
+            ctk.CTkLabel(popup, text=field,
+                font=ctk.CTkFont(size=14)).pack(anchor="w", padx=30, pady=(10, 0))
+            entry = ctk.CTkEntry(popup, width=440, height=35)
+            entry.insert(0, str(value) if value else "")
+            entry.pack(padx=30)
+            entries[field] = entry
+
+        def save():
+            on_edit_item(
+                self.selected_barcode,
+                entries["Item Name"].get(),
+                entries["Category"].get(),
+                entries["Unit Cost"].get(),
+                entries["Selling Price"].get(),
+                entries["Current Stock"].get(),
+            )
+            popup.destroy()
+            self.load_items()
+
+        ctk.CTkButton(popup, text="SAVE",
+            fg_color="#90EE90", text_color="#000000",
+            hover_color="#7dd67d", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            corner_radius=0, width=440, height=45,
+            command=save
+        ).pack(padx=30, pady=20)
+
     def open_delete_confirm(self):
         if not self.selected_barcode:
             popup = ctk.CTkToplevel(self)
@@ -200,7 +257,6 @@ class InventoryPage(ctk.CTkFrame):
             popup.geometry("300x150")
             popup.resizable(False, False)
             popup.grab_set()
-
             ctk.CTkLabel(popup, text="Please select an item first!",
                 font=ctk.CTkFont(size=14)).pack(expand=True)
             ctk.CTkButton(popup, text="OK", command=popup.destroy,
