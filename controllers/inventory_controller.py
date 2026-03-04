@@ -1,6 +1,5 @@
 from database.database import add_item, delete_item, update_item, get_item_by_barcode
 
-
 def on_add_item(item_name, category, unit_cost, selling_price, current_stock):
     try:
         add_item(
