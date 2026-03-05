@@ -1,12 +1,11 @@
 import customtkinter as ctk
 from controllers import controller
-from database.database import get_all_items
+from database.database import get_all_items_with_reorder
 
 class ReorderTablePage(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="#ffffff", corner_radius=0)
 
-        # ── Header ──────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color="#ffffff", height=80, corner_radius=0)
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
@@ -20,19 +19,16 @@ class ReorderTablePage(ctk.CTkFrame):
         ).pack(side="left", padx=10)
 
         ctk.CTkLabel(
-            header,
-            text="REORDER TABLE",
+            header, text="REORDER TABLE",
             font=ctk.CTkFont(size=22, weight="bold"),
             text_color="#000000"
         ).place(relx=0.5, rely=0.5, anchor="center")
 
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
-        # ── Body ─────────────────────────────────────────────
         body = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
         body.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # ── Table ────────────────────────────────────────────
         table_frame = ctk.CTkFrame(body, fg_color="#000000", corner_radius=0)
         table_frame.pack(fill="both", expand=True)
 
@@ -58,7 +54,6 @@ class ReorderTablePage(ctk.CTkFrame):
 
         self.load_items()
 
-        # ── Bottom Button ────────────────────────────────────
         btn_frame = ctk.CTkFrame(self, fg_color="#ffffff", height=80, corner_radius=0)
         btn_frame.pack(fill="x", padx=10, pady=10)
         btn_frame.pack_propagate(False)
@@ -76,19 +71,36 @@ class ReorderTablePage(ctk.CTkFrame):
         for widget in self.rows_frame.winfo_children():
             widget.destroy()
 
-        items = get_all_items()
+        items = get_all_items_with_reorder()
+
+        status_colors = {
+            "OK":       "#90EE90",
+            "REORDER":  "#FFA500",
+            "CRITICAL": "#FF4444"
+        }
 
         for i, item in enumerate(items):
             bg = "#f0f0f0" if i % 2 == 0 else "#d3d3d3"
-            barcode, item_name, category, unit_cost, selling_price, current_stock = item
-            row_data = [barcode, item_name, category, "", "", ""]
+            barcode, item_name, category, min_level, max_level, status = item
+            row_data = [barcode, item_name, category, min_level, max_level]
 
             for j, val in enumerate(row_data):
                 ctk.CTkLabel(
                     self.rows_frame,
-                    text=str(val),
+                    text=str(val) if val else "",
                     font=ctk.CTkFont(size=18),
                     text_color="#000000",
                     justify="center",
                     fg_color=bg
                 ).grid(row=i, column=j, sticky="nsew", padx=1, pady=10)
+
+            # Status with color
+            status_bg = status_colors.get(status, bg)
+            ctk.CTkLabel(
+                self.rows_frame,
+                text=status if status else "",
+                font=ctk.CTkFont(size=18, weight="bold"),
+                text_color="#000000",
+                justify="center",
+                fg_color=status_bg
+            ).grid(row=i, column=5, sticky="nsew", padx=1, pady=10)

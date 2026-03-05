@@ -31,11 +31,9 @@ class InventoryPage(ctk.CTkFrame):
 
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
-        # ── Body ─────────────────────────────────────────────
         body = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
         body.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # ── Table ────────────────────────────────────────────
         table_frame = ctk.CTkFrame(body, fg_color="#000000", corner_radius=0)
         table_frame.pack(fill="both", expand=True)
 
@@ -62,7 +60,6 @@ class InventoryPage(ctk.CTkFrame):
 
         self.load_items()
 
-        # ── Bottom Buttons ────────────────────────────────────
         btn_frame = ctk.CTkFrame(self, fg_color="#ffffff", height=80, corner_radius=0)
         btn_frame.pack(fill="x", padx=10, pady=10)
         btn_frame.pack_propagate(False)
@@ -118,18 +115,28 @@ class InventoryPage(ctk.CTkFrame):
 
         for i, item in enumerate(items):
             bg = "#f0f0f0" if i % 2 == 0 else "#d3d3d3"
-            barcode, item_name, category, unit_cost, selling_price, current_stock = item
-            row_data = [barcode, item_name, category, unit_cost, selling_price, "", current_stock, ""]
+            barcode, item_name, category, unit_cost, selling_price, current_stock, weekly_demand, classification, status = item
+
+            # Classification color
+            cls_colors = {"A": "#90EE90", "B": "#00BFFF", "C": "#FFD700"}
+            cls_bg = cls_colors.get(classification, bg)
+
+            # Status color
+            status_colors = {"OK": "#90EE90", "REORDER": "#FFA500", "CRITICAL": "#FF4444"}
+            status_bg = status_colors.get(status, bg)
+
+            row_data = [barcode, item_name, category, unit_cost, selling_price, weekly_demand, current_stock, classification]
+            row_colors = [bg, bg, bg, bg, bg, bg, bg, cls_bg]
 
             row_labels = []
-            for j, val in enumerate(row_data):
+            for j, (val, cell_bg) in enumerate(zip(row_data, row_colors)):
                 lbl = ctk.CTkLabel(
                     self.rows_frame,
                     text=str(val),
                     font=ctk.CTkFont(size=18),
                     text_color="#000000",
                     justify="center",
-                    fg_color=bg,
+                    fg_color=cell_bg,
                     cursor="hand2"
                 )
                 lbl.grid(row=i, column=j, sticky="nsew", padx=1, pady=10)

@@ -1,13 +1,12 @@
 import sqlite3
 import os
 import sys
+import math
 
 def get_db_path():
     if getattr(sys, 'frozen', False):
-        # Running as .exe
         base_path = os.path.dirname(sys.executable)
     else:
-        # Running as .py
         base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, "pos.db")
 
@@ -18,7 +17,6 @@ def initialize_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Accounts table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +26,6 @@ def initialize_db():
         )
     """)
 
-    # Items table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,11 +34,32 @@ def initialize_db():
             category TEXT,
             unit_cost REAL DEFAULT 0,
             selling_price REAL DEFAULT 0,
-            current_stock INTEGER DEFAULT 0
+            current_stock INTEGER DEFAULT 0,
+            weekly_demand REAL DEFAULT 0,
+            safety_stock REAL DEFAULT 0,
+            rop REAL DEFAULT 0,
+            min_level REAL DEFAULT 0,
+            max_level REAL DEFAULT 0,
+            status TEXT DEFAULT '',
+            classification TEXT DEFAULT ''
         )
     """)
 
-    # Seed default admin
+    # Migrate existing items table if columns missing
+    for col in [
+        "weekly_demand REAL DEFAULT 0",
+        "safety_stock REAL DEFAULT 0",
+        "rop REAL DEFAULT 0",
+        "min_level REAL DEFAULT 0",
+        "max_level REAL DEFAULT 0",
+        "status TEXT DEFAULT ''",
+        "classification TEXT DEFAULT ''"
+    ]:
+        try:
+            cursor.execute(f"ALTER TABLE items ADD COLUMN {col}")
+        except:
+            pass
+
     cursor.execute("""
         INSERT OR IGNORE INTO accounts (email, role, is_current)
         VALUES ('admin@gmail.com', 'admin', 1)
@@ -92,7 +110,22 @@ def add_item(item_name, category, unit_cost, selling_price, current_stock):
 def get_all_items():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT barcode, item_name, category, unit_cost, selling_price, current_stock FROM items")
+    cursor.execute("""
+        SELECT barcode, item_name, category, unit_cost, selling_price,
+               current_stock, weekly_demand, classification, status
+        FROM items
+    """)
+    items = cursor.fetchall()
+    conn.close()
+    return items
+
+def get_all_items_with_reorder():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT barcode, item_name, category, min_level, max_level, status
+        FROM items
+    """)
     items = cursor.fetchall()
     conn.close()
     return items
@@ -122,3 +155,41 @@ def get_item_by_barcode(barcode):
     item = cursor.fetchone()
     conn.close()
     return item
+
+def update_reorder_info(barcode, safety_stock, rop, min_level, max_level, status, weekly_demand):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE items
+        SET safety_stock=?, rop=?, min_level=?, max_level=?, status=?, weekly_demand=?
+        WHERE barcode=?
+    """, (safety_stock, rop, min_level, max_level, status, weekly_demand, barcode))
+    conn.commit()
+    conn.close()
+
+def update_all_classifications():
+    """Compute ABC classification for all items based on weekly demand."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT barcode, weekly_demand FROM items ORDER BY weekly_demand DESC")
+    items = cursor.fetchall()
+    conn.close()
+
+    total = len(items)
+    if total == 0:
+        return
+
+    for idx, (barcode, demand) in enumerate(items):
+        rank_pct = (idx + 1) / total
+        if rank_pct <= 0.20:
+            cls = "A"
+        elif rank_pct <= 0.50:
+            cls = "B"
+        else:
+            cls = "C"
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE items SET classification=? WHERE barcode=?", (cls, barcode))
+        conn.commit()
+        conn.close()
