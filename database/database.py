@@ -61,6 +61,30 @@ def initialize_db():
             pass
 
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS receipts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            receipt_no TEXT NOT NULL UNIQUE,
+            date TEXT NOT NULL,
+            time TEXT NOT NULL,
+            total REAL DEFAULT 0,
+            cash REAL DEFAULT 0,
+            change_amount REAL DEFAULT 0
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS receipt_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            receipt_no TEXT NOT NULL,
+            barcode TEXT,
+            item_name TEXT,
+            selling_price REAL DEFAULT 0,
+            quantity INTEGER DEFAULT 1,
+            FOREIGN KEY (receipt_no) REFERENCES receipts(receipt_no)
+        )
+    """)
+
+    cursor.execute("""
         INSERT OR IGNORE INTO accounts (email, role, is_current)
         VALUES ('admin@gmail.com', 'admin', 1)
     """)
@@ -166,6 +190,47 @@ def update_reorder_info(barcode, safety_stock, rop, min_level, max_level, status
     """, (safety_stock, rop, min_level, max_level, status, weekly_demand, barcode))
     conn.commit()
     conn.close()
+
+def save_receipt(cart, total, cash, change_amount):
+    import random
+    from datetime import datetime
+    conn = get_connection()
+    cursor = conn.cursor()
+    receipt_no = f"REC{random.randint(10000, 99999)}"
+    now = datetime.now()
+    date_str = now.strftime("%m/%d/%y")
+    time_str = now.strftime("%H:%M")
+    cursor.execute("""
+        INSERT INTO receipts (receipt_no, date, time, total, cash, change_amount)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (receipt_no, date_str, time_str, total, cash, change_amount))
+    for item in cart:
+        cursor.execute("""
+            INSERT INTO receipt_items (receipt_no, barcode, item_name, selling_price, quantity)
+            VALUES (?, ?, ?, ?, ?)
+        """, (receipt_no, item["barcode"], item["item_name"], item["selling_price"], item["quantity"]))
+    conn.commit()
+    conn.close()
+    return receipt_no
+
+def get_all_receipts():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT date, time, receipt_no FROM receipts ORDER BY id DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def get_receipt_by_no(receipt_no):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT barcode, item_name, selling_price, quantity
+        FROM receipt_items WHERE receipt_no = ?
+    """, (receipt_no,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [{"barcode": r[0], "item_name": r[1], "selling_price": r[2], "quantity": r[3]} for r in rows]
 
 def update_all_classifications():
     """Compute ABC classification for all items based on weekly demand."""

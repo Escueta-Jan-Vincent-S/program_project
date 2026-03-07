@@ -1,27 +1,230 @@
 import customtkinter as ctk
 from controllers import controller
+from controllers.receipts_controller import ReceiptsController
+
 
 class ReceiptsPage(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="#ffffff", corner_radius=0)
+        self.ctrl = ReceiptsController(self)
+        self._build_ui()
 
-        header = ctk.CTkFrame(self, fg_color="#00BFFF", height=150, corner_radius=0)
+    def _build_ui(self):
+        # ── Header ────────────────────────────────────────────
+        header = ctk.CTkFrame(self, fg_color="#00BFFF", height=90, corner_radius=0)
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
         ctk.CTkButton(
             header, text="<", fg_color="transparent",
-            text_color="#000000", hover_color="#00a8e0",
-            font=ctk.CTkFont(size=70, weight="bold"),
-            corner_radius=0, width=50, height=50,
+            text_color="#000000", hover_color="#009fd4",
+            font=ctk.CTkFont(size=50, weight="bold"),
+            corner_radius=0, width=70, height=70,
             command=lambda: controller.navigate("dashboard")
         ).pack(side="left", padx=10)
 
         ctk.CTkLabel(
-            header, text="RECORD OF RECEIPTS",
-            font=ctk.CTkFont(size=70, weight="bold"),
+            header, text="LIST OF RECORD OF RECEIPTS",
+            font=ctk.CTkFont(size=32, weight="bold"),
             text_color="#000000"
         ).place(relx=0.5, rely=0.5, anchor="center")
 
-        body = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
-        body.pack(fill="both", expand=True)
+        # PRINT button
+        ctk.CTkButton(
+            header, text="PRINT",
+            fg_color="#ffffff", text_color="#000000",
+            hover_color="#e0e0e0", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=22, weight="bold"),
+            corner_radius=0, width=130, height=55,
+            command=self._on_print
+        ).pack(side="right", padx=20)
+
+        ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
+
+        # ── Table header ──────────────────────────────────────
+        col_header = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0, height=50)
+        col_header.pack(fill="x")
+        col_header.pack_propagate(False)
+
+        ctk.CTkFrame(col_header, fg_color="#000000", width=2, corner_radius=0).pack(side="left", fill="y")
+        for txt, w in [("DATE", 140), ("TIME", 140), ("RECEIPT NO.", 0)]:
+            ctk.CTkLabel(col_header, text=txt,
+                font=ctk.CTkFont(size=16, weight="bold"),
+                text_color="#000000",
+                width=w if w else 0,
+                anchor="center"
+            ).pack(side="left", fill="x" if w == 0 else "none",
+                   expand=(w == 0), padx=10, pady=10)
+            ctk.CTkFrame(col_header, fg_color="#000000", width=2, corner_radius=0).pack(side="left", fill="y")
+
+        ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
+
+        # ── Scrollable rows ───────────────────────────────────
+        self.rows_frame = ctk.CTkScrollableFrame(
+            self, fg_color="#ffffff", corner_radius=0)
+        self.rows_frame.pack(fill="both", expand=True)
+
+        # ── Bottom bar ────────────────────────────────────────
+        ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
+
+        bottom = ctk.CTkFrame(self, fg_color="#00BFFF", height=55, corner_radius=0)
+        bottom.pack(fill="x", side="bottom")
+        bottom.pack_propagate(False)
+
+        self.status_label = ctk.CTkLabel(
+            bottom, text="Select a receipt to print.",
+            font=ctk.CTkFont(size=14),
+            text_color="#000000"
+        )
+        self.status_label.pack(side="left", padx=20, pady=10)
+
+        self.selected_label = ctk.CTkLabel(
+            bottom, text="",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            text_color="#000000"
+        )
+        self.selected_label.pack(side="right", padx=20)
+
+    # ── Load / Refresh ────────────────────────────────────────
+    def load_items(self):
+        self.ctrl.selected_receipt_no = None
+        self.selected_label.configure(text="")
+        self.status_label.configure(text="Select a receipt to print.")
+        self._render_rows()
+
+    def _render_rows(self):
+        for w in self.rows_frame.winfo_children():
+            w.destroy()
+
+        records = self.ctrl.load_all()
+
+        if not records:
+            ctk.CTkLabel(self.rows_frame,
+                text="No receipts found.",
+                font=ctk.CTkFont(size=16),
+                text_color="#888888"
+            ).pack(pady=40)
+            return
+
+        self._row_frames = []
+
+        for i, (date, time, receipt_no) in enumerate(records):
+            bg = "#f5f5f5" if i % 2 == 0 else "#ffffff"
+
+            row = ctk.CTkFrame(self.rows_frame, fg_color=bg,
+                               corner_radius=0, height=55, cursor="hand2")
+            row.pack(fill="x")
+            row.pack_propagate(False)
+
+            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
+
+            ctk.CTkLabel(row, text=date,
+                font=ctk.CTkFont(size=15), text_color="#000000",
+                width=140, anchor="center"
+            ).pack(side="left", padx=10)
+
+            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
+
+            ctk.CTkLabel(row, text=time,
+                font=ctk.CTkFont(size=15), text_color="#000000",
+                width=140, anchor="center"
+            ).pack(side="left", padx=10)
+
+            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
+
+            ctk.CTkLabel(row, text=receipt_no,
+                font=ctk.CTkFont(size=15), text_color="#000000",
+                anchor="center"
+            ).pack(side="left", fill="x", expand=True, padx=10)
+
+            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="right", fill="y")
+
+            # Click to select
+            for widget in row.winfo_children():
+                widget.bind("<Button-1>", lambda e, rno=receipt_no, r=row, orig=bg: self._select_row(rno, r, orig))
+            row.bind("<Button-1>", lambda e, rno=receipt_no, r=row, orig=bg: self._select_row(rno, r, orig))
+
+            self._row_frames.append((receipt_no, row, bg))
+
+        # Bottom divider
+        ctk.CTkFrame(self.rows_frame, fg_color="#000000", height=1, corner_radius=0).pack(fill="x")
+
+    def _select_row(self, receipt_no, selected_row, orig_bg):
+        # Reset all rows
+        for rno, row, bg in self._row_frames:
+            row.configure(fg_color=bg)
+            for w in row.winfo_children():
+                if isinstance(w, ctk.CTkLabel):
+                    w.configure(fg_color=bg)
+
+        # Highlight selected
+        selected_row.configure(fg_color="#00BFFF")
+        for w in selected_row.winfo_children():
+            if isinstance(w, ctk.CTkLabel):
+                w.configure(fg_color="#00BFFF")
+
+        self.ctrl.select(receipt_no)
+        self.selected_label.configure(text=f"Selected: {receipt_no}")
+        self.status_label.configure(text="Press PRINT to print this receipt.")
+
+    # ── Print ─────────────────────────────────────────────────
+    def _on_print(self):
+        if not self.ctrl.selected_receipt_no:
+            self._show_msg("Please select a receipt first!", error=True)
+            return
+
+        popup = ctk.CTkToplevel(self)
+        popup.title("Print Receipt")
+        popup.geometry("380x200")
+        popup.resizable(False, False)
+        popup.grab_set()
+        popup.lift()
+
+        ctk.CTkLabel(popup,
+            text=f"Print receipt {self.ctrl.selected_receipt_no}?",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            text_color="#000000"
+        ).pack(pady=20)
+
+        btn_row = ctk.CTkFrame(popup, fg_color="transparent")
+        btn_row.pack(pady=10)
+
+        def do_pdf():
+            popup.destroy()
+            result = self.ctrl.print_selected_pdf()
+            self._show_msg(result)
+
+        def do_usb():
+            popup.destroy()
+            result = self.ctrl.print_selected_usb()
+            self._show_msg(result)
+
+        ctk.CTkButton(btn_row, text="📄 Save PDF",
+            fg_color="#90EE90", text_color="#000000",
+            hover_color="#7dd67d", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            corner_radius=0, width=140, height=50,
+            command=do_pdf
+        ).pack(side="left", padx=10)
+
+        ctk.CTkButton(btn_row, text="🖨 USB Print",
+            fg_color="#d3d3d3", text_color="#000000",
+            hover_color="#c0c0c0", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            corner_radius=0, width=140, height=50,
+            command=do_usb
+        ).pack(side="left", padx=10)
+
+    def _show_msg(self, msg, error=False):
+        p = ctk.CTkToplevel(self)
+        p.title("Info")
+        p.geometry("340x160")
+        p.resizable(False, False)
+        p.grab_set()
+        ctk.CTkLabel(p, text=msg,
+            font=ctk.CTkFont(size=14), justify="center",
+            text_color="#FF4444" if error else "#000000"
+        ).pack(expand=True)
+        ctk.CTkButton(p, text="OK", command=p.destroy,
+            fg_color="#d3d3d3", text_color="#000000",
+            corner_radius=0, width=100).pack(pady=10)
