@@ -47,11 +47,11 @@ class ReceiptsPage(ctk.CTkFrame):
 
         # PRINT button
         ctk.CTkButton(
-            header, text="PRINT",
+            header, text="PRINT / VIEW",
             fg_color="#ffffff", text_color="#000000",
             hover_color="#e0e0e0", border_color="#000000", border_width=2,
             font=ctk.CTkFont(size=22, weight="bold"),
-            corner_radius=0, width=130, height=55,
+            corner_radius=0, width=180, height=55,
             command=self._on_print
         ).pack(side="right", padx=20)
 
@@ -140,6 +140,10 @@ class ReceiptsPage(ctk.CTkFrame):
 
         if query:
             records = [r for r in records if query in r[2].lower()]
+        for w in self.rows_frame.winfo_children():
+            w.destroy()
+
+        records = self.ctrl.load_all()
 
         if not records:
             ctk.CTkLabel(self.rows_frame,
@@ -257,27 +261,43 @@ class ReceiptsPage(ctk.CTkFrame):
             command=popup.destroy
         ).pack(side="left", padx=10)
 
-    # ── Print ─────────────────────────────────────────────────
+    # ── Print / View ──────────────────────────────────────────
     def _on_print(self):
         if not self.ctrl.selected_receipt_no:
             self._show_msg("Please select a receipt first!", error=True)
             return
 
         popup = ctk.CTkToplevel(self)
-        popup.title("Print Receipt")
-        popup.geometry("380x200")
+        popup.title("Receipt Options")
+        popup.geometry("380x230")
         popup.resizable(False, False)
         popup.grab_set()
         popup.lift()
 
         ctk.CTkLabel(popup,
-            text=f"Print receipt {self.ctrl.selected_receipt_no}?",
+            text=f"Receipt: {self.ctrl.selected_receipt_no}",
             font=ctk.CTkFont(size=15, weight="bold"),
             text_color="#000000"
-        ).pack(pady=20)
+        ).pack(pady=(20, 5))
+
+        ctk.CTkLabel(popup,
+            text="What would you like to do?",
+            font=ctk.CTkFont(size=13),
+            text_color="#555555"
+        ).pack(pady=(0, 15))
 
         btn_row = ctk.CTkFrame(popup, fg_color="transparent")
-        btn_row.pack(pady=10)
+        btn_row.pack(pady=5)
+
+        def do_view():
+            popup.destroy()
+            cart, err = self.ctrl.get_selected_cart()
+            if err:
+                self._show_msg(err, error=True)
+                return
+            import controllers.controller as c
+            c._app.receipt_page.load_receipt(cart, self.ctrl.selected_receipt_no, back_to="receipts")
+            controller.navigate("receipt")
 
         def do_pdf():
             popup.destroy()
@@ -289,21 +309,29 @@ class ReceiptsPage(ctk.CTkFrame):
             result = self.ctrl.print_selected_usb()
             self._show_msg(result)
 
-        ctk.CTkButton(btn_row, text="📄 Save PDF",
+        ctk.CTkButton(btn_row, text="👁 VIEW",
+            fg_color="#00BFFF", text_color="#000000",
+            hover_color="#009fd4", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            corner_radius=0, width=100, height=50,
+            command=do_view
+        ).pack(side="left", padx=8)
+
+        ctk.CTkButton(btn_row, text="📄 PDF",
             fg_color="#90EE90", text_color="#000000",
             hover_color="#7dd67d", border_color="#000000", border_width=2,
             font=ctk.CTkFont(size=14, weight="bold"),
-            corner_radius=0, width=140, height=50,
+            corner_radius=0, width=100, height=50,
             command=do_pdf
-        ).pack(side="left", padx=10)
+        ).pack(side="left", padx=8)
 
-        ctk.CTkButton(btn_row, text="🖨 USB Print",
+        ctk.CTkButton(btn_row, text="🖨 USB",
             fg_color="#d3d3d3", text_color="#000000",
             hover_color="#c0c0c0", border_color="#000000", border_width=2,
             font=ctk.CTkFont(size=14, weight="bold"),
-            corner_radius=0, width=140, height=50,
+            corner_radius=0, width=100, height=50,
             command=do_usb
-        ).pack(side="left", padx=10)
+        ).pack(side="left", padx=8)
 
     def _show_msg(self, msg, error=False):
         p = ctk.CTkToplevel(self)

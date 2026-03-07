@@ -17,12 +17,14 @@ class ReceiptPage(ctk.CTkFrame):
         header.pack(fill="x", side="top")
         header.pack_propagate(False)
 
+        self._back_target = "inventory"  # default, overridable
+
         ctk.CTkButton(
             header, text="<", fg_color="transparent",
             text_color="#000000", hover_color="#7dd67d",
             font=ctk.CTkFont(size=40, weight="bold"),
             corner_radius=0, width=60, height=60,
-            command=lambda: controller.navigate("inventory")
+            command=lambda: controller.navigate(self._back_target)
         ).pack(side="left", padx=10)
 
         ctk.CTkLabel(
@@ -75,7 +77,8 @@ class ReceiptPage(ctk.CTkFrame):
             command=self.do_pdf_print
         ).pack(pady=5)
 
-    def load_receipt(self, cart, receipt_no=None):
+    def load_receipt(self, cart, receipt_no=None, back_to="inventory"):
+        self._back_target = back_to
         self.cart = cart
         # Use provided receipt_no (from sell page) or generate new one
         if receipt_no:
