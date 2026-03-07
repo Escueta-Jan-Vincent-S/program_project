@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from controllers import controller
 from controllers.inventory_controller import on_add_item, on_delete_item, on_edit_item
+import controllers.controller as c
 
 class InventoryPage(ctk.CTkFrame):
     def __init__(self, master):
@@ -8,6 +9,7 @@ class InventoryPage(ctk.CTkFrame):
 
         self.selected_barcode = None
         self.selected_row_labels = []
+        self.cart = []
 
         # ── Header ──────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color="#ffffff", height=80, corner_radius=0)
@@ -31,11 +33,13 @@ class InventoryPage(ctk.CTkFrame):
 
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
-        body = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
-        body.pack(fill="both", expand=True, padx=10, pady=10)
+        # ── Main area (table + cart side by side) ────────────
+        main = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
+        main.pack(fill="both", expand=True, padx=10, pady=10)
 
-        table_frame = ctk.CTkFrame(body, fg_color="#000000", corner_radius=0)
-        table_frame.pack(fill="both", expand=True)
+        # ── Table (left) ─────────────────────────────────────
+        table_frame = ctk.CTkFrame(main, fg_color="#000000", corner_radius=0)
+        table_frame.pack(fill="both", expand=True, side="left")
 
         columns = ["Barcode", "Item Name", "Category", "Unit Cost",
                    "Selling Price", "Demand", "Current Stock", "Classification"]
@@ -60,6 +64,75 @@ class InventoryPage(ctk.CTkFrame):
 
         self.load_items()
 
+        # ── Cart Panel (right) ────────────────────────────────
+        cart_panel = ctk.CTkFrame(main, fg_color="#f9f9f9", corner_radius=0,
+                                   border_color="#000000", border_width=1, width=400)
+        cart_panel.pack(fill="y", side="right", padx=(10, 0))
+        cart_panel.pack_propagate(False)
+
+        ctk.CTkLabel(cart_panel, text="CART",
+            font=ctk.CTkFont(size=20, weight="bold"),
+            text_color="#000000"
+        ).pack(pady=10)
+
+        ctk.CTkFrame(cart_panel, fg_color="#000000", height=1, corner_radius=0).pack(fill="x")
+
+        # Quantity input
+        qty_frame = ctk.CTkFrame(cart_panel, fg_color="#f9f9f9", corner_radius=0)
+        qty_frame.pack(fill="x", padx=10, pady=10)
+
+        ctk.CTkLabel(qty_frame, text="Quantity:",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color="#000000"
+        ).pack(side="left")
+
+        self.qty_entry = ctk.CTkEntry(qty_frame, width=100, height=35,
+                                       font=ctk.CTkFont(size=16))
+        self.qty_entry.pack(side="left", padx=10)
+        self.qty_entry.insert(0, "1")
+
+        ctk.CTkButton(
+            cart_panel, text="ADD TO CART",
+            fg_color="#90EE90", text_color="#000000",
+            hover_color="#7dd67d", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            corner_radius=0, height=40,
+            command=self.add_to_cart
+        ).pack(fill="x", padx=10, pady=5)
+
+        # Cart items list
+        self.cart_frame = ctk.CTkScrollableFrame(
+            cart_panel, fg_color="#ffffff", corner_radius=0)
+        self.cart_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Total
+        ctk.CTkFrame(cart_panel, fg_color="#000000", height=1, corner_radius=0).pack(fill="x")
+        self.total_label = ctk.CTkLabel(cart_panel, text="TOTAL: ₱0.00",
+            font=ctk.CTkFont(size=18, weight="bold"),
+            text_color="#000000"
+        )
+        self.total_label.pack(pady=5)
+
+        # Clear + Print buttons
+        ctk.CTkButton(
+            cart_panel, text="CLEAR CART",
+            fg_color="#FF4444", text_color="#ffffff",
+            hover_color="#cc0000", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            corner_radius=0, height=40,
+            command=self.clear_cart
+        ).pack(fill="x", padx=10, pady=2)
+
+        ctk.CTkButton(
+            cart_panel, text="PRINT RECEIPT",
+            fg_color="#FFD700", text_color="#000000",
+            hover_color="#e6c200", border_color="#000000", border_width=2,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            corner_radius=0, height=45,
+            command=self.go_to_receipt
+        ).pack(fill="x", padx=10, pady=5)
+
+        # ── Bottom Buttons ────────────────────────────────────
         btn_frame = ctk.CTkFrame(self, fg_color="#ffffff", height=80, corner_radius=0)
         btn_frame.pack(fill="x", padx=10, pady=10)
         btn_frame.pack_propagate(False)
@@ -100,7 +173,7 @@ class InventoryPage(ctk.CTkFrame):
             hover_color="#e6c200", border_color="#000000", border_width=2,
             font=ctk.CTkFont(size=25, weight="bold"),
             corner_radius=0, width=250, height=35,
-            command=lambda: print("PRINT clicked")
+            command=self.go_to_receipt
         ).pack(pady=2)
 
     def load_items(self):
@@ -117,13 +190,8 @@ class InventoryPage(ctk.CTkFrame):
             bg = "#f0f0f0" if i % 2 == 0 else "#d3d3d3"
             barcode, item_name, category, unit_cost, selling_price, current_stock, weekly_demand, classification, status = item
 
-            # Classification color
             cls_colors = {"A": "#90EE90", "B": "#00BFFF", "C": "#FFD700"}
             cls_bg = cls_colors.get(classification, bg)
-
-            # Status color
-            status_colors = {"OK": "#90EE90", "REORDER": "#FFA500", "CRITICAL": "#FF4444"}
-            status_bg = status_colors.get(status, bg)
 
             row_data = [barcode, item_name, category, unit_cost, selling_price, weekly_demand, current_stock, classification]
             row_colors = [bg, bg, bg, bg, bg, bg, bg, cls_bg]
@@ -153,6 +221,101 @@ class InventoryPage(ctk.CTkFrame):
             lbl.configure(fg_color="#00BFFF")
         self.selected_barcode = barcode
 
+    def add_to_cart(self):
+        if not self.selected_barcode:
+            self._warning("Please select an item first!")
+            return
+
+        try:
+            qty = int(self.qty_entry.get())
+            if qty <= 0:
+                raise ValueError
+        except ValueError:
+            self._warning("Please enter a valid quantity!")
+            return
+
+        from database.database import get_item_by_barcode
+        item = get_item_by_barcode(self.selected_barcode)
+        barcode       = item[1]
+        item_name     = item[2]
+        selling_price = float(item[5])
+
+        # If already in cart, add quantity
+        for cart_item in self.cart:
+            if cart_item["barcode"] == barcode:
+                cart_item["quantity"] += qty
+                self.refresh_cart()
+                return
+
+        self.cart.append({
+            "barcode": barcode,
+            "item_name": item_name,
+            "selling_price": selling_price,
+            "quantity": qty
+        })
+        self.refresh_cart()
+
+    def refresh_cart(self):
+        for widget in self.cart_frame.winfo_children():
+            widget.destroy()
+
+        total = 0
+        for idx, item in enumerate(self.cart):
+            amount = item["selling_price"] * item["quantity"]
+            total += amount
+
+            row = ctk.CTkFrame(self.cart_frame, fg_color="#f0f0f0", corner_radius=0,
+                                border_color="#d3d3d3", border_width=1)
+            row.pack(fill="x", pady=2)
+
+            ctk.CTkLabel(row,
+                text=f"{item['item_name']}\nx{item['quantity']} @ ₱{item['selling_price']:.2f}",
+                font=ctk.CTkFont(size=12),
+                text_color="#000000", justify="left"
+            ).pack(side="left", padx=5)
+
+            ctk.CTkLabel(row,
+                text=f"₱{amount:.2f}",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color="#000000"
+            ).pack(side="right", padx=5)
+
+            ctk.CTkButton(row, text="✕",
+                fg_color="transparent", text_color="#FF4444",
+                hover_color="#f0f0f0", width=20,
+                font=ctk.CTkFont(size=12),
+                command=lambda i=idx: self.remove_from_cart(i)
+            ).pack(side="right")
+
+        self.total_label.configure(text=f"TOTAL: ₱{total:.2f}")
+
+    def remove_from_cart(self, idx):
+        self.cart.pop(idx)
+        self.refresh_cart()
+
+    def clear_cart(self):
+        self.cart = []
+        self.refresh_cart()
+
+    def go_to_receipt(self):
+        if not self.cart:
+            self._warning("Cart is empty!")
+            return
+        c._app.receipt_page.load_receipt(self.cart)
+        controller.navigate("receipt")
+
+    def _warning(self, message):
+        popup = ctk.CTkToplevel(self)
+        popup.title("Warning")
+        popup.geometry("300x150")
+        popup.resizable(False, False)
+        popup.grab_set()
+        ctk.CTkLabel(popup, text=message,
+            font=ctk.CTkFont(size=14)).pack(expand=True)
+        ctk.CTkButton(popup, text="OK", command=popup.destroy,
+            fg_color="#d3d3d3", text_color="#000000",
+            corner_radius=0, width=100).pack(pady=10)
+
     def open_add_item(self):
         from database.database import get_next_barcode
         popup = ctk.CTkToplevel(self)
@@ -163,7 +326,6 @@ class InventoryPage(ctk.CTkFrame):
 
         ctk.CTkLabel(popup, text="ADD ITEM",
             font=ctk.CTkFont(size=20, weight="bold")).pack(pady=15)
-
         ctk.CTkLabel(popup, text=f"Barcode: {get_next_barcode()}",
             font=ctk.CTkFont(size=14)).pack(anchor="w", padx=30)
 
@@ -198,16 +360,7 @@ class InventoryPage(ctk.CTkFrame):
 
     def open_edit_item(self):
         if not self.selected_barcode:
-            popup = ctk.CTkToplevel(self)
-            popup.title("Warning")
-            popup.geometry("300x150")
-            popup.resizable(False, False)
-            popup.grab_set()
-            ctk.CTkLabel(popup, text="Please select an item first!",
-                font=ctk.CTkFont(size=14)).pack(expand=True)
-            ctk.CTkButton(popup, text="OK", command=popup.destroy,
-                fg_color="#d3d3d3", text_color="#000000",
-                corner_radius=0, width=100).pack(pady=10)
+            self._warning("Please select an item first!")
             return
 
         from database.database import get_item_by_barcode
@@ -221,7 +374,6 @@ class InventoryPage(ctk.CTkFrame):
 
         ctk.CTkLabel(popup, text="EDIT ITEM",
             font=ctk.CTkFont(size=20, weight="bold")).pack(pady=15)
-
         ctk.CTkLabel(popup, text=f"Barcode: {item[1]}",
             font=ctk.CTkFont(size=14)).pack(anchor="w", padx=30)
 
@@ -259,16 +411,7 @@ class InventoryPage(ctk.CTkFrame):
 
     def open_delete_confirm(self):
         if not self.selected_barcode:
-            popup = ctk.CTkToplevel(self)
-            popup.title("Warning")
-            popup.geometry("300x150")
-            popup.resizable(False, False)
-            popup.grab_set()
-            ctk.CTkLabel(popup, text="Please select an item first!",
-                font=ctk.CTkFont(size=14)).pack(expand=True)
-            ctk.CTkButton(popup, text="OK", command=popup.destroy,
-                fg_color="#d3d3d3", text_color="#000000",
-                corner_radius=0, width=100).pack(pady=10)
+            self._warning("Please select an item first!")
             return
 
         popup = ctk.CTkToplevel(self)
