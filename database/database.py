@@ -8,7 +8,7 @@ def get_db_path():
         base_path = os.path.dirname(sys.executable)
     else:
         base_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_path, "pos.db")
+    return os.path.join(base_path, "database.db")
 
 def get_connection():
     return sqlite3.connect(get_db_path())
