@@ -85,25 +85,55 @@ def print_pdf(cart, receipt_no):
             c.drawRightString(w - 15, y, amount)
             y -= size + 5
 
-        # Store info
-        center_text(f"* {STORE_NAME} *", size=11, bold=True)
+        # ── Store Header Block ────────────────────────────────
+        c.setFillColor(colors.black)
+        c.rect(10, y - 2, w - 20, 16, fill=1, stroke=0)
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(w / 2, y + 1, f"*  {STORE_NAME}  *")
+        c.setFillColor(colors.black)
+        y -= 20
+
         center_text(STORE_ADDRESS, size=9)
         center_text(STORE_TEL, size=9)
+        y -= 2
         center_text(f"DATE: {now}", size=8)
+        y -= 1
         center_text(f"RECEIPT NO: {receipt_no}", size=10, bold=True)
-        solid_line()
-        center_text("--- OFFICIAL RECEIPT ---", size=11, bold=True)
+        y -= 3
         solid_line()
 
-        # Column headers
-        four_col("DESCRIPTION", "QTY", "UNIT PRICE", "AMOUNT", bold=True)
+        # Official Receipt title with shaded bg
+        c.setFillColor(colors.HexColor("#eeeeee"))
+        c.rect(10, y - 12, w - 20, 18, fill=1, stroke=0)
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(w / 2, y - 6, "--- OFFICIAL RECEIPT ---")
+        y -= 22
+        solid_line()
+
+        # Column headers with dark background
+        c.setFillColor(colors.HexColor("#222222"))
+        c.rect(10, y - 13, w - 20, 17, fill=1, stroke=0)
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 9)
+        c.drawString(16, y - 8, "DESCRIPTION")
+        c.drawCentredString(w * 0.52, y - 8, "QTY")
+        c.drawCentredString(w * 0.68, y - 8, "UNIT PRICE")
+        c.drawRightString(w - 15, y - 8, "AMOUNT")
+        c.setFillColor(colors.black)
+        y -= 20
         dashed_line()
 
-        # Items
+        # Items with alternating rows
         total = 0
-        for item in cart:
+        for idx, item in enumerate(cart):
             amount = item["selling_price"] * item["quantity"]
             total += amount
+            if idx % 2 == 0:
+                c.setFillColor(colors.HexColor("#f9f9f9"))
+                c.rect(10, y - 3, w - 20, 14, fill=1, stroke=0)
+                c.setFillColor(colors.black)
             four_col(
                 item["item_name"],
                 str(item["quantity"]),
@@ -113,25 +143,28 @@ def print_pdf(cart, receipt_no):
 
         dashed_line()
 
-        # Total only
-        left_right("TOTAL", f"P{total:.2f}", bold=True)
+        # Total row with shaded background
+        c.setFillColor(colors.HexColor("#eeeeee"))
+        c.rect(10, y - 5, w - 20, 18, fill=1, stroke=0)
+        c.setFillColor(colors.black)
+        left_right("TOTAL", f"P{total:.2f}", size=11, bold=True)
         solid_line()
 
-        # Barcode image
-        y -= 10
+        # Barcode
+        y -= 8
         barcode_buf = generate_barcode_image(receipt_no)
         if barcode_buf:
             img = Image.open(barcode_buf)
-            barcode_path = os.path.join(get_base_path(), f"_temp_barcode.png")
+            barcode_path = os.path.join(get_base_path(), "_temp_barcode.png")
             img.save(barcode_path)
-            barcode_w = w - 30
-            barcode_h = 40
-            c.drawImage(barcode_path, 15, y - barcode_h,
+            barcode_w = w - 40
+            barcode_h = 45
+            c.drawImage(barcode_path, 20, y - barcode_h,
                         width=barcode_w, height=barcode_h)
-            y -= barcode_h + 10
+            y -= barcode_h + 8
             c.setFont("Helvetica", 8)
             c.drawCentredString(w / 2, y, receipt_no)
-            y -= 12
+            y -= 14
             try:
                 os.remove(barcode_path)
             except:
@@ -141,7 +174,15 @@ def print_pdf(cart, receipt_no):
             center_text(receipt_no, size=9)
 
         solid_line()
-        center_text("* THANK YOU FOR SHOPPING! *", size=10, bold=True)
+
+        # Thank you footer with black banner
+        c.setFillColor(colors.black)
+        c.rect(10, y - 16, w - 20, 20, fill=1, stroke=0)
+        c.setFillColor(colors.white)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(w / 2, y - 9, "*  THANK YOU FOR SHOPPING!  *")
+        c.setFillColor(colors.black)
+        y -= 24
         center_text("Please come again!", size=9)
 
         c.save()
