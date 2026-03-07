@@ -3,10 +3,11 @@ from controllers import controller
 from controllers.receipt_controller import print_pdf, print_usb
 from datetime import datetime
 import random
+import io
 
 class ReceiptPage(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color="#90EE90", corner_radius=0)
+        super().__init__(master, fg_color="#ffffff", corner_radius=0)
         self.cart = []
         self.receipt_no = ""
 
@@ -32,18 +33,19 @@ class ReceiptPage(ctk.CTkFrame):
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
         # ── Body ─────────────────────────────────────────────
-        body = ctk.CTkFrame(self, fg_color="#90EE90", corner_radius=0)
+        body = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0)
         body.pack(fill="both", expand=True)
 
-        # ── Receipt Card ─────────────────────────────────────
-        self.card = ctk.CTkFrame(body, fg_color="#ffffff", corner_radius=0,
-                                  border_color="#000000", border_width=2,
-                                  width=500)
+        # ── Receipt Card ──────────────────────────────────────
+        self.card = ctk.CTkScrollableFrame(
+            body, fg_color="#ffffff", corner_radius=0,
+            border_color="#000000", border_width=2,
+            width=480, height=600
+        )
         self.card.place(relx=0.4, rely=0.5, anchor="center")
-        self.card.pack_propagate(False)
 
-        # ── Right side buttons ────────────────────────────────
-        right = ctk.CTkFrame(body, fg_color="#90EE90", corner_radius=0)
+        # ── Right Buttons ─────────────────────────────────────
+        right = ctk.CTkFrame(body, fg_color="#ffffff", corner_radius=0)
         right.place(relx=0.82, rely=0.5, anchor="center")
 
         ctk.CTkButton(
@@ -66,77 +68,134 @@ class ReceiptPage(ctk.CTkFrame):
 
     def load_receipt(self, cart):
         self.cart = cart
-        self.receipt_no = f"REC-{random.randint(10000, 99999)}"
+        self.receipt_no = f"REC{random.randint(10000, 99999)}"
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Clear card
         for widget in self.card.winfo_children():
             widget.destroy()
 
-        # Store info
-        ctk.CTkLabel(self.card, text="LANZ & LINDLY MINIMART",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            text_color="#000000").pack(pady=(15, 0))
-        ctk.CTkLabel(self.card, text="****ADDRESS****",
-            font=ctk.CTkFont(size=12), text_color="#000000").pack()
-        ctk.CTkLabel(self.card, text="TEL. NO.",
-            font=ctk.CTkFont(size=12), text_color="#000000").pack()
-        ctk.CTkLabel(self.card, text=f"RECEIPT NO. {self.receipt_no}",
-            font=ctk.CTkFont(size=12), text_color="#000000").pack()
-        ctk.CTkLabel(self.card, text=now,
-            font=ctk.CTkFont(size=11), text_color="#000000").pack(pady=(0, 5))
+        def divider(style="solid"):
+            if style == "dashed":
+                ctk.CTkLabel(self.card,
+                    text="- " * 30,
+                    font=ctk.CTkFont(size=8),
+                    text_color="#000000").pack(fill="x", padx=10)
+            else:
+                ctk.CTkFrame(self.card, fg_color="#000000",
+                    height=1, corner_radius=0).pack(fill="x", padx=10, pady=3)
 
-        ctk.CTkFrame(self.card, fg_color="#000000", height=1, corner_radius=0).pack(fill="x", padx=10)
-        ctk.CTkLabel(self.card, text="RECEIPT",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            text_color="#000000").pack(pady=5)
-        ctk.CTkFrame(self.card, fg_color="#000000", height=1, corner_radius=0).pack(fill="x", padx=10)
+        def center_label(text, size=12, bold=False):
+            ctk.CTkLabel(self.card, text=text,
+                font=ctk.CTkFont(size=size, weight="bold" if bold else "normal"),
+                text_color="#000000").pack()
 
-        # Column headers
-        col_frame = ctk.CTkFrame(self.card, fg_color="#ffffff", corner_radius=0)
-        col_frame.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(col_frame, text="DESCRIPTION",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            text_color="#000000").pack(side="left")
-        ctk.CTkLabel(col_frame, text="PRICE",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            text_color="#000000").pack(side="right")
+        # ── Store Info ────────────────────────────────────────
+        center_label("★ LANZ & LINDLY MINIMART ★", size=14, bold=True)
+        center_label("San Pablo City, Laguna", size=11)
+        center_label("TEL. NO. : ____________", size=11)
+        center_label(f"DATE: {now}", size=10)
+        center_label(f"RECEIPT NO: {self.receipt_no}", size=11, bold=True)
+        divider()
 
-        # Items
+        center_label("─── OFFICIAL RECEIPT ───", size=13, bold=True)
+        divider()
+
+        # ── Column Headers ────────────────────────────────────
+        col = ctk.CTkFrame(self.card, fg_color="#f0f0f0", corner_radius=0)
+        col.pack(fill="x", padx=10, pady=2)
+        ctk.CTkLabel(col, text="DESCRIPTION",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#000000", width=170, anchor="w").pack(side="left", padx=5)
+        ctk.CTkLabel(col, text="QTY",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#000000", width=40, anchor="center").pack(side="left")
+        ctk.CTkLabel(col, text="UNIT",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#000000", width=65, anchor="center").pack(side="left")
+        ctk.CTkLabel(col, text="AMOUNT",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#000000", width=75, anchor="e").pack(side="right", padx=5)
+
+        divider("dashed")
+
+        # ── Items ─────────────────────────────────────────────
         total = 0
         for item in cart:
             amount = item["selling_price"] * item["quantity"]
             total += amount
 
             row = ctk.CTkFrame(self.card, fg_color="#ffffff", corner_radius=0)
-            row.pack(fill="x", padx=10, pady=2)
-            ctk.CTkLabel(row,
-                text=f"{item['item_name']} x{item['quantity']}",
-                font=ctk.CTkFont(size=12), text_color="#000000").pack(side="left")
-            ctk.CTkLabel(row,
-                text=f"₱{amount:.2f}",
-                font=ctk.CTkFont(size=12), text_color="#000000").pack(side="right")
+            row.pack(fill="x", padx=10, pady=1)
+            ctk.CTkLabel(row, text=item["item_name"],
+                font=ctk.CTkFont(size=11),
+                text_color="#000000", width=170, anchor="w").pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=str(item["quantity"]),
+                font=ctk.CTkFont(size=11),
+                text_color="#000000", width=40, anchor="center").pack(side="left")
+            ctk.CTkLabel(row, text=f"₱{item['selling_price']:.2f}",
+                font=ctk.CTkFont(size=11),
+                text_color="#000000", width=65, anchor="center").pack(side="left")
+            ctk.CTkLabel(row, text=f"₱{amount:.2f}",
+                font=ctk.CTkFont(size=11),
+                text_color="#000000", width=75, anchor="e").pack(side="right", padx=5)
 
-        ctk.CTkFrame(self.card, fg_color="#000000", height=1, corner_radius=0).pack(fill="x", padx=10, pady=5)
+        divider("dashed")
 
-        # Total / Cash / Change
-        for label, value in [
-            ("TOTAL",  f"₱{total:.2f}"),
-            ("CASH",   "₱0.00"),
-            ("CHANGE", "₱0.00")
-        ]:
-            row = ctk.CTkFrame(self.card, fg_color="#ffffff", corner_radius=0)
-            row.pack(fill="x", padx=10)
-            ctk.CTkLabel(row, text=label,
-                font=ctk.CTkFont(size=13, weight="bold"),
-                text_color="#000000").pack(side="left")
-            ctk.CTkLabel(row, text=value,
-                font=ctk.CTkFont(size=13), text_color="#000000").pack(side="right")
+        # ── Total ─────────────────────────────────────────────
+        row = ctk.CTkFrame(self.card, fg_color="#ffffff", corner_radius=0)
+        row.pack(fill="x", padx=10, pady=2)
+        ctk.CTkLabel(row, text="TOTAL",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color="#000000").pack(side="left", padx=5)
+        ctk.CTkLabel(row, text=f"₱{total:.2f}",
+            font=ctk.CTkFont(size=13),
+            text_color="#000000").pack(side="right", padx=5)
 
-        ctk.CTkFrame(self.card, fg_color="#000000", height=1, corner_radius=0).pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(self.card, text="THANK YOU",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            text_color="#000000").pack(pady=(0, 15))
+        divider()
+
+        # ── Barcode Image ─────────────────────────────────────
+        try:
+            import barcode
+            from barcode.writer import ImageWriter
+            from PIL import Image
+
+            buf = io.BytesIO()
+            code = barcode.get("code128", self.receipt_no, writer=ImageWriter())
+            code.write(buf, options={
+                "module_width": 0.8,
+                "module_height": 8.0,
+                "font_size": 6,
+                "text_distance": 2,
+                "quiet_zone": 2,
+                "write_text": False
+            })
+            buf.seek(0)
+            pil_img = Image.open(buf).convert("RGB")
+            pil_img = pil_img.resize((360, 70), Image.LANCZOS)
+
+            # ✅ Use CTkImage instead of ImageTk.PhotoImage
+            self._barcode_img = ctk.CTkImage(
+                light_image=pil_img,
+                dark_image=pil_img,
+                size=(360, 70)
+            )
+
+            ctk.CTkLabel(self.card, text="", height=15).pack()
+            ctk.CTkLabel(self.card, image=self._barcode_img, text="").pack(pady=5)
+            ctk.CTkLabel(self.card,
+                text=self.receipt_no,
+                font=ctk.CTkFont(size=10),
+                text_color="#000000").pack(pady=(0, 5))
+
+        except ImportError:
+            ctk.CTkLabel(self.card, text="", height=15).pack()
+            center_label("| || ||| || | ||| || |", size=16)
+            center_label(self.receipt_no, size=10)
+
+        divider()
+        center_label("★ THANK YOU FOR SHOPPING! ★", size=13, bold=True)
+        center_label("Please come again!", size=11)
+        ctk.CTkLabel(self.card, text="", height=10).pack()
 
     def do_usb_print(self):
         result = print_usb(self.cart, self.receipt_no)
