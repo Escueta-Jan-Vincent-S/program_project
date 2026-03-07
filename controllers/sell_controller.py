@@ -1,4 +1,4 @@
-from database.database import get_item_by_barcode, update_item, save_receipt
+from database.database import get_item_by_barcode, update_item, save_receipt, get_receipt_by_no
 import controllers.controller as c
 
 
@@ -14,6 +14,10 @@ class SellController:
         barcode = barcode.strip()
         if not barcode:
             return "Please enter a barcode!"
+
+        # If input is a receipt number, load all items from that receipt
+        if barcode.upper().startswith("REC"):
+            return self.load_from_receipt(barcode.upper())
 
         item = get_item_by_barcode(barcode)
         if not item:
@@ -39,6 +43,46 @@ class SellController:
             "selling_price": selling_price,
             "quantity": 1
         })
+        return None  # success
+
+    def load_from_receipt(self, receipt_no):
+        past_items = get_receipt_by_no(receipt_no)
+        if not past_items:
+            return f"Receipt '{receipt_no}' not found!"
+
+        errors = []
+        for past in past_items:
+            barcode = past["barcode"]
+            db_item = get_item_by_barcode(barcode)
+            if not db_item:
+                errors.append(f"'{past['item_name']}' no longer exists")
+                continue
+
+            item_name     = db_item[2]
+            selling_price = float(db_item[5])
+            current_stock = int(db_item[6])
+            qty           = past["quantity"]
+
+            if current_stock <= 0:
+                errors.append(f"'{item_name}' is out of stock")
+                continue
+
+            qty = min(qty, current_stock)
+
+            existing = next((i for i in self.cart if i["barcode"] == barcode), None)
+            if existing:
+                new_qty = existing["quantity"] + qty
+                existing["quantity"] = min(new_qty, current_stock)
+            else:
+                self.cart.append({
+                    "barcode": barcode,
+                    "item_name": item_name,
+                    "selling_price": selling_price,
+                    "quantity": qty
+                })
+
+        if errors:
+            return "Loaded with issues:\n" + "\n".join(errors)
         return None  # success
 
     def increment(self, barcode):
