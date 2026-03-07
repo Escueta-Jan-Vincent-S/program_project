@@ -42,18 +42,19 @@ class ReceiptsPage(ctk.CTkFrame):
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
         # ── Table header ──────────────────────────────────────
-        col_header = ctk.CTkFrame(self, fg_color="#ffffff", corner_radius=0, height=50)
+        col_header = ctk.CTkFrame(self, fg_color="#000000", corner_radius=0, height=45)
         col_header.pack(fill="x")
         col_header.pack_propagate(False)
 
-        ctk.CTkFrame(col_header, fg_color="#000000", width=2, corner_radius=0).pack(side="left", fill="y")
-        for txt, w in [("DATE", 120), ("TIME", 100), ("RECEIPT NO.", 160), ("TOTAL", 120), ("STATUS", 130)]:
+        for i in range(5):
+            col_header.grid_columnconfigure(i, weight=1, uniform="col")
+
+        for i, txt in enumerate(["DATE", "TIME", "RECEIPT NO.", "TOTAL", "STATUS"]):
             ctk.CTkLabel(col_header, text=txt,
                 font=ctk.CTkFont(size=16, weight="bold"),
-                text_color="#000000",
-                width=w, anchor="center"
-            ).pack(side="left", padx=10, pady=10)
-            ctk.CTkFrame(col_header, fg_color="#000000", width=2, corner_radius=0).pack(side="left", fill="y")
+                text_color="#ffffff", anchor="center",
+                fg_color="#000000"
+            ).grid(row=0, column=i, sticky="nsew", padx=1, pady=1)
 
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
 
@@ -61,6 +62,9 @@ class ReceiptsPage(ctk.CTkFrame):
         self.rows_frame = ctk.CTkScrollableFrame(
             self, fg_color="#ffffff", corner_radius=0)
         self.rows_frame.pack(fill="both", expand=True)
+
+        for i in range(5):
+            self.rows_frame.grid_columnconfigure(i, weight=1, uniform="col")
 
         # ── Bottom bar ────────────────────────────────────────
         ctk.CTkFrame(self, fg_color="#000000", height=2, corner_radius=0).pack(fill="x")
@@ -119,79 +123,55 @@ class ReceiptsPage(ctk.CTkFrame):
                 text="No receipts found.",
                 font=ctk.CTkFont(size=16),
                 text_color="#888888"
-            ).pack(pady=40)
+            ).grid(row=0, column=0, columnspan=5, pady=40)
             return
 
         self._row_frames = []
 
         for i, (date, time, receipt_no, total, is_paid) in enumerate(records):
             bg = "#f5f5f5" if i % 2 == 0 else "#ffffff"
-
-            row = ctk.CTkFrame(self.rows_frame, fg_color=bg,
-                               corner_radius=0, height=55, cursor="hand2")
-            row.pack(fill="x")
-            row.pack_propagate(False)
-
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
-
-            ctk.CTkLabel(row, text=date,
-                font=ctk.CTkFont(size=15), text_color="#000000",
-                width=120, anchor="center"
-            ).pack(side="left", padx=10)
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
-
-            ctk.CTkLabel(row, text=time,
-                font=ctk.CTkFont(size=15), text_color="#000000",
-                width=100, anchor="center"
-            ).pack(side="left", padx=10)
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
-
-            ctk.CTkLabel(row, text=receipt_no,
-                font=ctk.CTkFont(size=15), text_color="#000000",
-                width=160, anchor="center"
-            ).pack(side="left", padx=10)
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
-
-            ctk.CTkLabel(row, text=f"₱{total:.2f}",
-                font=ctk.CTkFont(size=15), text_color="#000000",
-                width=120, anchor="center"
-            ).pack(side="left", padx=10)
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="left", fill="y")
-
-            # Paid badge
             badge_color = "#228B22" if is_paid else "#FF4444"
             badge_text  = "✔ PAID" if is_paid else "✘ UNPAID"
-            ctk.CTkLabel(row, text=badge_text,
-                font=ctk.CTkFont(size=13, weight="bold"),
+
+            row_widgets = []
+            for j, val in enumerate([date, time, receipt_no, f"₱{total:.2f}"]):
+                lbl = ctk.CTkLabel(self.rows_frame, text=val,
+                    font=ctk.CTkFont(size=15), text_color="#000000",
+                    anchor="center", justify="center", fg_color=bg
+                )
+                lbl.grid(row=i*2, column=j, sticky="nsew", ipady=12)
+                lbl.bind("<Button-1>", lambda e, rno=receipt_no: self._select_row(rno))
+                row_widgets.append(lbl)
+
+            # Badge cell
+            badge_lbl = ctk.CTkLabel(self.rows_frame, text=badge_text,
+                font=ctk.CTkFont(size=12, weight="bold"),
                 text_color="#ffffff", fg_color=badge_color,
-                corner_radius=6, width=100, anchor="center"
-            ).pack(side="left", padx=15)
+                corner_radius=8, width=90, anchor="center"
+            )
+            badge_lbl.grid(row=i*2, column=4, pady=8, sticky="")
+            self.rows_frame.columnconfigure(4, weight=1, uniform="col")
+            badge_lbl.bind("<Button-1>", lambda e, rno=receipt_no: self._select_row(rno))
+            row_widgets.append(badge_lbl)
 
-            ctk.CTkFrame(row, fg_color="#000000", width=1, corner_radius=0).pack(side="right", fill="y")
+            # Separator row
+            for j in range(5):
+                sep = ctk.CTkFrame(self.rows_frame, fg_color="#dddddd", height=1, corner_radius=0)
+                sep.grid(row=i*2+1, column=j, sticky="ew")
 
-            # Click to select
-            for widget in row.winfo_children():
-                widget.bind("<Button-1>", lambda e, rno=receipt_no, r=row, orig=bg: self._select_row(rno, r, orig))
-            row.bind("<Button-1>", lambda e, rno=receipt_no, r=row, orig=bg: self._select_row(rno, r, orig))
+            self._row_frames.append((receipt_no, row_widgets, bg))
 
-            self._row_frames.append((receipt_no, row, bg))
-
-        # Bottom divider
-        ctk.CTkFrame(self.rows_frame, fg_color="#000000", height=1, corner_radius=0).pack(fill="x")
-
-    def _select_row(self, receipt_no, selected_row, orig_bg):
-        # Reset all rows
-        for rno, row, bg in self._row_frames:
-            row.configure(fg_color=bg)
-            for w in row.winfo_children():
-                if isinstance(w, ctk.CTkLabel):
+    def _select_row(self, receipt_no):
+        for rno, widgets, bg in self._row_frames:
+            for w in widgets:
+                if w.cget("text") not in ["✔ PAID", "✘ UNPAID"]:
                     w.configure(fg_color=bg)
 
-        # Highlight selected
-        selected_row.configure(fg_color="#00BFFF")
-        for w in selected_row.winfo_children():
-            if isinstance(w, ctk.CTkLabel):
-                w.configure(fg_color="#00BFFF")
+        for rno, widgets, bg in self._row_frames:
+            if rno == receipt_no:
+                for w in widgets:
+                    if w.cget("text") not in ["✔ PAID", "✘ UNPAID"]:
+                        w.configure(fg_color="#00BFFF")
 
         self.ctrl.select(receipt_no)
         self.selected_label.configure(text=f"Selected: {receipt_no}")
