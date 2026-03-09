@@ -16,9 +16,12 @@ class SellController:
         if not barcode:
             return "Please enter a barcode!"
 
-        # If input is a receipt number, load all items from that receipt
-        if barcode.upper().startswith("REC"):
-            return self.load_from_receipt(barcode.upper())
+        # If input is a receipt number (REC12345 or just 12345), load from receipt
+        normalized = barcode.upper()
+        if normalized.startswith("REC") or normalized.isdigit():
+            if normalized.isdigit():
+                normalized = "REC" + normalized
+            return self.load_from_receipt(normalized)
 
         item = get_item_by_barcode(barcode)
         if not item:

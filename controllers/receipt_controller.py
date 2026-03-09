@@ -201,14 +201,7 @@ def print_usb(cart, receipt_no):
         from escpos.printer import Usb
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # ── SET YOUR PRINTER USB IDs HERE ─────────────────────
-        # Run in terminal to find your IDs:
-        # Windows: Get-PnpDevice | Select FriendlyName, DeviceID
-        # Look for VID_XXXX&PID_XXXX in the DeviceID
-        VENDOR_ID  = 0x0416   # ← Replace with your VID
-        PRODUCT_ID = 0x5011   # ← Replace with your PID
-        # ─────────────────────────────────────────────────────
-        printer = Usb(VENDOR_ID, PRODUCT_ID)
+        printer = Usb(0x0FE6, 0x811E)  # OC-58H / POS58 Printer
 
         printer.set(align="center", bold=True)
         printer.text(f"* {STORE_NAME} *\n")
@@ -242,12 +235,14 @@ def print_usb(cart, receipt_no):
         printer.text(f"{'TOTAL':<20}P{total:.2f}\n")
         printer.text("=" * 32 + "\n")
 
-        # Barcode
-        barcode_buf = generate_barcode_image(receipt_no)
-        if barcode_buf:
-            printer.image(barcode_buf)
+        # Barcode — CODE39 with numeric part only (REC prefix removed)
         printer.set(align="center")
-        printer.text(f"\n{receipt_no}\n")
+        try:
+            barcode_num = receipt_no.replace("REC", "").strip()
+            printer.barcode(barcode_num, "CODE39", width=2, height=80, pos="BELOW", font="A")
+        except Exception:
+            printer.text(f"\n{receipt_no}\n")
+        printer.set(align="center")
         printer.set(align="center", bold=True)
         printer.text("\n* THANK YOU FOR SHOPPING! *\n")
         printer.text("Please come again!\n\n\n")
@@ -257,5 +252,5 @@ def print_usb(cart, receipt_no):
 
     except ImportError:
         return "Please install:\npip install python-escpos"
-    except Exception as e:
-        return f"Printer error!\nCheck VID/PID in receipt_controller.py\n\nDetails: {str(e)}"
+    except Exception:
+        return "No printer detected!\nMake sure USB thermal\nprinter is connected."
