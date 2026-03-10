@@ -2,6 +2,25 @@ import customtkinter as ctk
 from controllers import controller
 from settings import APP_NAME
 from database.database import initialize_db
+
+# ── Force-load libusb DLL for PyInstaller bundled exe ────────
+import os, sys, ctypes
+def _load_libusb():
+    try:
+        if getattr(sys, 'frozen', False):
+            # Running as PyInstaller exe — DLL is in the temp folder
+            base = sys._MEIPASS
+            dll_path = os.path.join(base, 'libusb-1.0.dll')
+            if os.path.exists(dll_path):
+                ctypes.CDLL(dll_path)
+                return
+        # Running as script — try System32
+        ctypes.CDLL('libusb-1.0.dll')
+    except Exception:
+        pass
+_load_libusb()
+# ─────────────────────────────────────────────────────────────
+
 initialize_db()
 
 class App(ctk.CTk):
@@ -46,42 +65,6 @@ class App(ctk.CTk):
         self.receipt_page.grid(row=0, column=0, sticky="nsew")
 
         self.show_page("dashboard")
-
-        # ── Global barcode scanner listener ───────────────────
-        # USB HID scanners type as keyboard. Capture every keypress
-        # globally so scanning works from ANY page.
-        self._scan_buffer = ""
-        self._scan_timer  = None
-        self.bind_all("<Key>", self._on_global_key)
-
-    def _on_global_key(self, event):
-        char = event.char
-        if self._scan_timer:
-            self.after_cancel(self._scan_timer)
-            self._scan_timer = None
-
-        if event.keysym == "Return":
-            barcode = self._scan_buffer.strip()
-            self._scan_buffer = ""
-            if barcode:
-                self._handle_scanned_barcode(barcode)
-        elif char and char.isprintable():
-            self._scan_buffer += char
-            # Scanner sends chars in rapid bursts; 300ms timeout clears stale input
-            self._scan_timer = self.after(300, self._clear_scan_buffer)
-
-    def _clear_scan_buffer(self):
-        self._scan_buffer = ""
-        self._scan_timer  = None
-
-    def _handle_scanned_barcode(self, barcode):
-        # Navigate to sell page then add item
-        self.show_page("sell")
-        err = self.sell_page.ctrl.add_by_barcode(barcode)
-        if err:
-            self.sell_page._warning(err)
-        else:
-            self.sell_page._refresh_cart()
 
     def show_page(self, page_name):
         pages = {
