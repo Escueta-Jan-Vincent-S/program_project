@@ -24,6 +24,7 @@ a = Analysis(
         ('controllers', 'controllers'),
         ('database', 'database'),
         ('settings.py', '.'),
+        ('icon.ico', '.'),
         *escpos_datas,
         *usb_datas,
     ],
@@ -93,4 +94,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # icon='icon.ico',   # Uncomment and set path if you have an icon
+    icon='icon.ico',
 )
