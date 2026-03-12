@@ -3,7 +3,7 @@ import io
 import os
 import sys
 
-STORE_NAME    = "Grocery Store Ngani"
+STORE_NAME    = "LANZ N LINDLY"
 STORE_ADDRESS = "San Pablo City, Laguna"
 STORE_TEL     = "TEL. NO. : ____________"
 

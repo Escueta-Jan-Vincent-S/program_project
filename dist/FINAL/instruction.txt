@@ -13,3 +13,4 @@ NOTE:
 - Always run the shortcut as Admin to ensure the printer works correctly.
 - If you encounter any issues with the printer, try reinstalling the driver using Zadig.
 - Set Scale into 100% for best display results.
+- 1920x1080 is the recommended screen resolution for optimal display.
