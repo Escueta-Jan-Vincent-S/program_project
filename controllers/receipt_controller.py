@@ -229,11 +229,21 @@ def print_usb(cart, receipt_no):
 
             if qty > 1:
                 tag  = f"@{unit:.2f}"
-                desc = f"{name[:13]} {tag}"
+                desc = f"{name} {tag}"
             else:
-                desc = name[:20]
+                desc = name
 
-            printer.text(f"{qty_str:<4}{desc:<20}{amount_str:>8}\n")
+            # Wrap description if longer than 20 chars
+            if len(desc) <= 20:
+                printer.text(f"{qty_str:<4}{desc:<20}{amount_str:>8}\n")
+            else:
+                # First line: QTY + first 20 chars of desc + AMOUNT
+                printer.text(f"{qty_str:<4}{desc[:20]:<20}{amount_str:>8}\n")
+                # Remaining chars wrap below, indented under DESCRIPTION column
+                remaining = desc[20:]
+                while remaining:
+                    printer.text(f"{'':4}{remaining[:20]:<20}{'':8}\n")
+                    remaining = remaining[20:]
 
         printer.text("-" * 32 + "\n")
         printer.set(bold=True)
